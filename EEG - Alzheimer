@@ -1,0 +1,222 @@
+import pandas as pd
+import numpy as np
+import matplotlib.pyplot as plt
+import seaborn as sns
+
+data = pd.read_csv('Alzhimer_data.csv')
+data
+	Patient ID	Parameter	Reading	Disease
+0	1	C3	['-0.063190', '-0.063190', '0.884680', '1.8325...	1
+1	1	C4	['-3.746000', '0.063490', '3.873000', '6.73020...	1
+2	1	Cz	['0.975610', '0.975610', '1.951200', '2.926800...	1
+3	1	F1	['2.884600', '-1.923100', '-0.961540', '1.9231...	1
+4	1	F2	['2.941200', '1.960800', '1.960800', '1.960800...	1
+...	...	...	...	...
+3855	184	Pz	['7.933300', '9.933300', '6.933300', '-6.06670...	0
+3856	184	T3	['-5.016500', '-7.986800', '-7.986800', '-10.9...	0
+3857	184	T4	['3.800300', '11.530000', '9.597400', '7.66510...	0
+3858	184	T5	['3.967500', '5.918700', '5.918700', '-0.91057...	0
+3859	184	T6	['30.080999', '34.910999', '32.979000', '23.31...	0
+
+def string_to_float_list(s):
+    return [float(x) for x in s.strip("[]").replace("'", "").split(", ")]
+data['Reading'] = data['Reading'].apply(string_to_float_list)
+data
+Patient ID	Parameter	Reading	Disease
+0	1	C3	[-0.06319, -0.06319, 0.88468, 1.8325, 5.624, 7...	1
+1	1	C4	[-3.746, 0.06349, 3.873, 6.7302, 10.54, 8.6349...	1
+2	1	Cz	[0.97561, 0.97561, 1.9512, 2.9268, 5.8537, 6.8...	1
+3	1	F1	[2.8846, -1.9231, -0.96154, 1.9231, 3.8462, 2....	1
+4	1	F2	[2.9412, 1.9608, 1.9608, 1.9608, 2.9412, -2.94...	1
+...	...	...	...	...
+3855	184	Pz	[7.9333, 9.9333, 6.9333, -6.0667, -18.066999, ...	0
+3856	184	T3	[-5.0165, -7.9868, -7.9868, -10.957, -15.908, ...	0
+3857	184	T4	[3.8003, 11.53, 9.5974, 7.6651, -3.9291, -5.86...	0
+3858	184	T5	[3.9675, 5.9187, 5.9187, -0.91057, -9.6911, -1...	0
+3859	184	T6	[30.080999, 34.910999, 32.979, 23.316999, 11.7...	0
+
+df = data[data['Patient ID'] ==1]
+df
+Patient ID	Parameter	Reading	Disease
+0	1	C3	[-0.06319, -0.06319, 0.88468, 1.8325, 5.624, 7...	1
+1	1	C4	[-3.746, 0.06349, 3.873, 6.7302, 10.54, 8.6349...	1
+2	1	Cz	[0.97561, 0.97561, 1.9512, 2.9268, 5.8537, 6.8...	1
+3	1	F1	[2.8846, -1.9231, -0.96154, 1.9231, 3.8462, 2....	1
+4	1	F2	[2.9412, 1.9608, 1.9608, 1.9608, 2.9412, -2.94...	1
+5	1	F3	[0.7767, -2.1359, 0.7767, 0.7767, 3.6893, 6.60...	1
+6	1	F4	[0.96154, 0.0, 1.9231, 6.7308, 3.8462, 3.8462,...	1
+7	1	F7	[4.7436, 0.89744, -0.0641, 1.859, 6.6667, 6.66...	1
+8	1	F8	[3.8003, 5.7327, 8.6312, 9.5974, 8.6312, 3.800...	1
+9	1	Fp1	[2.8846, -1.9231, -0.96154, 1.9231, 3.8462, 2....	1
+10	1	Fp2	[2.9412, 1.9608, 1.9608, 1.9608, 2.9412, -2.94...	1
+11	1	Fz	[2.8758, 0.91503, 1.8954, 2.8758, 3.8562, 2.87...	1
+12	1	O1	[1.8957, 0.94787, -0.94787, -1.8957, -0.94787,...	1
+13	1	O2	[-0.06349, 0.88889, -1.0159, -2.9206, -1.9683,...	1
+14	1	P3	[0.06349, 0.06349, 0.06349, 0.06349, 1.9683, 2...	1
+15	1	P4	[-5.8333, 0.89744, 4.7436, 5.7051, 8.5897, 6.6...	1
+16	1	Pz	[0.96618, 2.8986, 2.8986, 1.9324, 2.8986, 1.93...	1
+17	1	T3	[0.82935, -2.0415, -2.0415, 0.82935, -2.0415, ...	1
+18	1	T4	[1.0111, 6.6983, 6.6983, 5.7504, 7.6461, 2.906...	1
+19	1	T5	[0.0, 0.97561, -2.9268, -1.9512, -0.97561, -3....	1
+20	1	T6	[-1.0897, -0.12821, -0.12821, -1.0897, 2.7564,...	1
+
+df
+Patient ID	Parameter	Reading	Disease
+0	1	C3	[-0.06319, -0.06319, 0.88468, 1.8325, 5.624, 7...	1
+1	1	C4	[-3.746, 0.06349, 3.873, 6.7302, 10.54, 8.6349...	1
+2	1	Cz	[0.97561, 0.97561, 1.9512, 2.9268, 5.8537, 6.8...	1
+3	1	F1	[2.8846, -1.9231, -0.96154, 1.9231, 3.8462, 2....	1
+4	1	F2	[2.9412, 1.9608, 1.9608, 1.9608, 2.9412, -2.94...	1
+5	1	F3	[0.7767, -2.1359, 0.7767, 0.7767, 3.6893, 6.60...	1
+6	1	F4	[0.96154, 0.0, 1.9231, 6.7308, 3.8462, 3.8462,...	1
+7	1	F7	[4.7436, 0.89744, -0.0641, 1.859, 6.6667, 6.66...	1
+8	1	F8	[3.8003, 5.7327, 8.6312, 9.5974, 8.6312, 3.800...	1
+9	1	Fp1	[2.8846, -1.9231, -0.96154, 1.9231, 3.8462, 2....	1
+10	1	Fp2	[2.9412, 1.9608, 1.9608, 1.9608, 2.9412, -2.94...	1
+11	1	Fz	[2.8758, 0.91503, 1.8954, 2.8758, 3.8562, 2.87...	1
+12	1	O1	[1.8957, 0.94787, -0.94787, -1.8957, -0.94787,...	1
+13	1	O2	[-0.06349, 0.88889, -1.0159, -2.9206, -1.9683,...	1
+14	1	P3	[0.06349, 0.06349, 0.06349, 0.06349, 1.9683, 2...	1
+15	1	P4	[-5.8333, 0.89744, 4.7436, 5.7051, 8.5897, 6.6...	1
+16	1	Pz	[0.96618, 2.8986, 2.8986, 1.9324, 2.8986, 1.93...	1
+17	1	T3	[0.82935, -2.0415, -2.0415, 0.82935, -2.0415, ...	1
+18	1	T4	[1.0111, 6.6983, 6.6983, 5.7504, 7.6461, 2.906...	1
+19	1	T5	[0.0, 0.97561, -2.9268, -1.9512, -0.97561, -3....	1
+20	1	T6	[-1.0897, -0.12821, -0.12821, -1.0897, 2.7564,...	1
+
+df = df[["Parameter","Reading"]]
+parameters = df["Parameter"]
+for i,reading in enumerate(df.Reading):
+    plt.plot(reading,label=parameters[i])
+plt.legend()
+plt.show()
+parameters = df["Parameter"]
+num_parameters = len(parameters)
+
+# Determine the number of rows and columns for subplots
+num_rows = int(num_parameters / 2) + (num_parameters % 2 > 0)
+num_cols = min(2, num_parameters)
+
+# Create subplots
+fig, axes = plt.subplots(num_rows, num_cols, figsize=(10 * num_cols, 2 * num_rows))
+# Flatten the axes array if there's only one row or column
+if num_rows == 1 and num_cols == 1:
+    axes = [axes]
+
+# Plot each parameter on a separate subplot
+for i, (ax, reading, param) in enumerate(zip(axes.flat, df.Reading, parameters)):
+    ax.plot(reading, label=param,color="orange")
+    ax.set_title(param)
+# Adjust layout and add gap between subplots
+plt.suptitle("Alzheimer's patient EEG",y=0.9,fontsize=16)
+plt.subplots_adjust(wspace=0.4, hspace=0.4)
+
+# Delete the last subplot if it's empty
+if num_parameters % 2 == 1:
+    fig.delaxes(axes[-1][-1])
+plt.savefig('Alzhimers.png')
+plt.show()
+
+data
+	Patient ID	Parameter	Reading	Disease
+0	1	C3	[-0.06319, -0.06319, 0.88468, 1.8325, 5.624, 7...	1
+1	1	C4	[-3.746, 0.06349, 3.873, 6.7302, 10.54, 8.6349...	1
+2	1	Cz	[0.97561, 0.97561, 1.9512, 2.9268, 5.8537, 6.8...	1
+3	1	F1	[2.8846, -1.9231, -0.96154, 1.9231, 3.8462, 2....	1
+4	1	F2	[2.9412, 1.9608, 1.9608, 1.9608, 2.9412, -2.94...	1
+...	...	...	...	...
+3855	184	Pz	[7.9333, 9.9333, 6.9333, -6.0667, -18.066999, ...	0
+3856	184	T3	[-5.0165, -7.9868, -7.9868, -10.957, -15.908, ...	0
+3857	184	T4	[3.8003, 11.53, 9.5974, 7.6651, -3.9291, -5.86...	0
+3858	184	T5	[3.9675, 5.9187, 5.9187, -0.91057, -9.6911, -1...	0
+3859	184	T6	[30.080999, 34.910999, 32.979, 23.316999, 11.7...	0
+3860 rows × 4 columns
+
+param = ['Fp1', 'Fp2', 'F3', 'Fz', 'F4', 'T3', 'T4', 'T5', 'T6', 'P3', 'Pz', 'P4']
+
+# Filter data
+df_patient1 = data[data['Patient ID'] == 1]
+df_patient184 = data[data['Patient ID'] == 184]
+
+fig, axes = plt.subplots(len(param), 2, figsize=(14, 20))
+
+for i, param in enumerate(param):
+    # Left plot: Patient ID 1
+    ax = axes[i, 0]
+    ax.plot(df_patient1[df_patient1['Parameter'] == param]['Reading'].values[0], label=f'Affected Individual\'s : {param}',color='grey')
+    ax.set_title(f'Affected Individual\'s- {param}')
+    ax.set_xlabel('Time')
+    ax.set_ylabel('Reading')
+    
+    # Right plot: Patient ID 184
+    ax = axes[i, 1]
+    ax.plot(df_patient184[df_patient184['Parameter'] == param]['Reading'].values[0], label=f'Healthy individuals: {param}',color='green')
+    ax.set_title(f'After Drug - {param}')
+    ax.set_xlabel('Time')
+    ax.set_ylabel('Reading')
+
+plt.tight_layout()
+plt.savefig('EEGPlots')
+plt.show()
+
+df2 = data[data["Patient ID"] == 184]
+parameters = df2["Parameter"]
+num_parameters = len(parameters)
+
+# Determine the number of rows and columns for subplots
+num_rows = int(num_parameters / 2) + (num_parameters % 2 > 0)
+num_cols = min(2, num_parameters)
+
+# Create subplots
+fig, axes = plt.subplots(num_rows, num_cols, figsize=(10 * num_cols, 2 * num_rows))
+
+# Flatten the axes array if there's only one row or column
+if num_rows == 1 and num_cols == 1:
+    axes = [axes]
+
+# Plot each parameter on a separate subplot
+for i, (ax, reading, param) in enumerate(zip(axes.flat, df2.Reading, parameters)):
+    ax.plot(reading, label=param)
+    ax.set_title(param)
+# Adjust layout and add gap between subplots
+
+plt.suptitle("Healthy patient EEG",y=0.9,fontsize=16)
+plt.subplots_adjust(wspace=0.4, hspace=0.4)
+
+# Delete the last subplot if it's empty
+if num_parameters % 2 == 1:
+    fig.delaxes(axes[-1][-1])
+plt.savefig('Healthy.png')
+plt.show()
+
+plt.plot(list(df2['Reading'])[0])
+plt.grid(axis='y') 
+plt.ylim(-35,35)
+plt.savefig('eegsample.png')
+df_expanded = data.explode('Reading').reset_index(drop=True)
+df_expanded
+
+	Patient ID	Parameter	Reading	Disease
+0	1	C3	-0.06319	1
+1	1	C3	-0.06319	1
+2	1	C3	0.88468	1
+3	1	C3	1.8325	1
+4	1	C3	5.624	1
+...	...	...	...	...
+3952635	184	T6	-2.7697	0
+3952636	184	T6	-14.364	0
+3952637	184	T6	-19.195	0
+3952638	184	T6	-5.6683	0
+3952639	184	
+
+data.describe()
+
+	Patient ID	Disease
+count	3860.000000	3860.000000
+mean	92.414508	0.870466
+std	53.083009	0.335833
+min	1.000000	0.000000
+25%	46.000000	1.000000
+50%	92.000000	1.000000
+75%	138.000000	1.000000
+max	184.000000	1.000000

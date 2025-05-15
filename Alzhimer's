@@ -1,0 +1,63 @@
+import os
+ADpath1 = 'EEG_Data/AD/Eyes_closed'
+ADpath2 = 'EEG_Data/AD/Eyes_open'
+
+import pandas as pd
+import numpy as np
+
+dest_path = os.listdir(ADpath1)
+
+patient_list=[]
+for i,patient_folder in enumerate(dest_path):
+    patient_dict = dict()
+    for x in os.listdir(ADpath1+"/"+patient_folder):
+        if x.split(".")[1]=="txt":
+            readings_list = list()
+            with open(ADpath1+"/"+patient_folder+"/"+x,'r') as file:
+                lines = file.readlines()
+                for line in lines:
+                    readings_list.append(line.strip())
+            patient_dict[x.split(".")[0]] = readings_list
+    patient_list.append(patient_dict)
+
+patient_list=[]
+for i,patient_folder in enumerate(dest_path):
+    patient_dict = dict()
+    for x in os.listdir(ADpath2+"/"+patient_folder):
+        if x.split(".")[1]=="txt":
+            readings_list = list()
+            with open(ADpath2+"/"+patient_folder+"/"+x,'r') as file:
+                lines = file.readlines()
+                for line in lines:
+                    readings_list.append(line.strip())
+            patient_dict[x.split(".")[0]] = readings_list
+    patient_list.append(patient_dict)
+
+print(ADpath1+"/"+patient_folder)
+
+EEG_Data/AD/Eyes_closed/Paciente9
+patient_dict.keys()
+dict_keys(['C3', 'C4', 'Cz', 'F1', 'F2', 'F3', 'F4', 'F7', 'F8', 'Fp1', 'Fp2', 'Fz', 'O1', 'O2', 'P3', 'P4', 'Pz', 'T3', 'T4', 'T5', 'T6'])
+len(patient_list)
+80
+patient_data = patient_list.copy()
+data_rows = []
+
+# Iterate over the patient data list
+for patient_id, readings_dict in enumerate(patient_data):
+    for parameter, readings in readings_dict.items():
+       data_rows.append([patient_id+1, parameter, readings])
+
+# Create a DataFrame from the list of rows
+df = pd.DataFrame(data_rows, columns=['Patient ID', 'Parameter', 'Reading'])
+
+data_rows = []
+
+# Iterate over the patient data list
+for patient_id, readings_dict in enumerate(patient_data):
+    for parameter, readings in readings_dict.items():
+       data_rows.append([patient_id+81, parameter, readings])
+
+# Create a DataFrame from the list of rows
+df2 = pd.DataFrame(data_rows, columns=['Patient ID', 'Parameter', 'Reading'])
+df2

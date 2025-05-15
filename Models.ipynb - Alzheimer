@@ -1,0 +1,208 @@
+import pandas as pd
+from sklearn.model_selection import train_test_split
+from sklearn.preprocessing import LabelEncoder
+from sklearn.ensemble import RandomForestClassifier
+from sklearn.metrics import accuracy_score, precision_score, recall_score
+
+data = pd.read_csv('Alzhimer_data.csv')
+data
+	Patient ID	Parameter	Reading	Disease
+0	1	C3	['-0.063190', '-0.063190', '0.884680', '1.8325...	1
+1	1	C4	['-3.746000', '0.063490', '3.873000', '6.73020...	1
+2	1	Cz	['0.975610', '0.975610', '1.951200', '2.926800...	1
+3	1	F1	['2.884600', '-1.923100', '-0.961540', '1.9231...	1
+4	1	F2	['2.941200', '1.960800', '1.960800', '1.960800...	1
+...	...	...	...	...
+3855	184	Pz	['7.933300', '9.933300', '6.933300', '-6.06670...	0
+3856	184	T3	['-5.016500', '-7.986800', '-7.986800', '-10.9...	0
+3857	184	T4	['3.800300', '11.530000', '9.597400', '7.66510...	0
+3858	184	T5	['3.967500', '5.918700', '5.918700', '-0.91057...	0
+3859	184	T6	['30.080999', '34.910999', '32.979000', '23.31...	0
+
+data.head(1)['Reading']
+0    ['-0.063190', '-0.063190', '0.884680', '1.8325...
+Name: Reading, dtype: object
+
+def clean_reading_column(value):
+    try:
+        list_values = eval(value)
+        return [float(item) for item in list_values]
+    except:
+        return None
+
+data['Reading'] = data['Reading'].apply(clean_reading_column)
+data
+Patient ID	Parameter	Reading	Disease
+0	1	C3	[-0.06319, -0.06319, 0.88468, 1.8325, 5.624, 7...	1
+1	1	C4	[-3.746, 0.06349, 3.873, 6.7302, 10.54, 8.6349...	1
+2	1	Cz	[0.97561, 0.97561, 1.9512, 2.9268, 5.8537, 6.8...	1
+3	1	F1	[2.8846, -1.9231, -0.96154, 1.9231, 3.8462, 2....	1
+4	1	F2	[2.9412, 1.9608, 1.9608, 1.9608, 2.9412, -2.94...	1
+...	...	...	...	...
+3855	184	Pz	[7.9333, 9.9333, 6.9333, -6.0667, -18.066999, ...	0
+3856	184	T3	[-5.0165, -7.9868, -7.9868, -10.957, -15.908, ...	0
+3857	184	T4	[3.8003, 11.53, 9.5974, 7.6651, -3.9291, -5.86...	0
+3858	184	T5	[3.9675, 5.9187, 5.9187, -0.91057, -9.6911, -1...	0
+3859	184	T6	[30.080999, 34.910999, 32.979, 23.316999, 11.7...	0
+
+data['Parameter'].unique()
+
+array(['C3', 'C4', 'Cz', 'F1', 'F2', 'F3', 'F4', 'F7', 'F8', 'Fp1', 'Fp2',
+       'Fz', 'O1', 'O2', 'P3', 'P4', 'Pz', 'T3', 'T4', 'T5', 'T6'],
+      dtype=object)
+readings_df = pd.DataFrame(data['Reading'].tolist() ,index = range(len(data['Reading'])))
+
+data = data.drop(columns=['Reading']).join(readings_df)
+
+label_encoder = LabelEncoder()
+data['Parameter'] = label_encoder.fit_transform(data['Parameter'])
+
+data.columns = data.columns.astype(str)
+
+X = data.drop(columns=['Patient ID', 'Disease'])
+y = data['Disease']
+
+X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.8, random_state=0)
+
+model = RandomForestClassifier(random_state=42)
+model.fit(X_train, y_train)
+
+from sklearn.metrics import classification_report,confusion_matrix
+
+y_pred = model.predict(X_test)
+
+# Evaluate the model
+accuracy = accuracy_score(y_test, y_pred)
+classification_rep = classification_report(y_test, y_pred)
+conf_matrix = confusion_matrix(y_test, y_pred)
+
+accuracy, classification_rep, conf_matrix
+
+(0.969559585492228,
+ '              precision    recall  f1-score   support\n\n           0       1.00      0.77      0.87       407\n           1       0.97      1.00      0.98      2681\n\n    accuracy                           0.97      3088\n   macro avg       0.98      0.88      0.93      3088\nweighted avg       0.97      0.97      0.97      3088\n',
+ array([[ 313,   94],
+        [   0, 2681]], dtype=int64))
+
+import matplotlib.pyplot as plt
+from sklearn.metrics import roc_curve, auc
+fpr, tpr, thresholds = roc_curve(list(y_test),list(y_pred))
+roc_auc = auc(fpr, tpr)
+
+# Plot ROC curve
+plt.figure(figsize = (4,3))
+plt.plot(fpr, tpr, color='darkorange', lw=2, label=f'ROC curve (AUC = {0.97:.2f})')
+plt.plot([0, 1], [0, 1], color='navy', lw=2, linestyle='--')
+plt.xlim([0.0, 1.0])
+plt.ylim([0.0, 1.05])
+plt.xlabel('False Positive Rate',fontsize=8)
+plt.ylabel('True Positive Rate',fontsize=8)
+plt.title('Receiver Operating Characteristic (ROC) Curve',fontsize=10)
+plt.legend(loc='lower right',fontsize=8)
+plt.tick_params(axis='both', which='major', labelsize=8)
+plt.savefig('roc_curve.png')
+plt.show()
+
+import warnings
+warnings.filterwarnings('ignore')
+
+from sklearn.linear_model import LogisticRegression
+from sklearn.neighbors import KNeighborsClassifier
+from sklearn.svm import SVC
+from sklearn.tree import DecisionTreeClassifier
+from sklearn.ensemble import GradientBoostingClassifier
+from sklearn.naive_bayes import GaussianNB
+
+models_ml = {
+    'Logistic Regression': LogisticRegression(random_state=42),
+    'K-Nearest Neighbors': KNeighborsClassifier(),
+    'Support Vector Machine': SVC(random_state=42),
+    'Decision Tree': DecisionTreeClassifier(random_state=42),
+    'Gradient Boosting': GradientBoostingClassifier(random_state=42),
+    'Naive Bayes': GaussianNB()
+}
+
+results_ml = {}
+
+for name, model in models_ml.items():
+    model.fit(X_train, y_train)
+    y_pred = model.predict(X_test)
+    accuracy = accuracy_score(y_test, y_pred)
+    results_ml[name] = accuracy
+    print(classification_report(y_test,y_pred))
+results_ml
+
+import tensorflow as tf
+from tensorflow.keras.models import Sequential
+tf.compat.v1.reset_default_graph()
+from tensorflow.keras.layers import Dense, Conv1D, Flatten, LSTM, Bidirectional
+
+input_shape = (X_train.shape[1], 1)
+X_train_dl = X_train.values.reshape((X_train.shape[0], X_train.shape[1], 1))
+X_test_dl = X_test.values.reshape((X_test.shape[0], X_test.shape[1], 1))
+
+# Simple Neural Network (MLP)
+def build_mlp():
+    model = Sequential([
+        Dense(64, activation='relu', input_shape=(X_train.shape[1],)),
+        Dense(32, activation='relu'),
+        Dense(1, activation='sigmoid')
+    ])
+    model.compile(optimizer='adam', loss='binary_crossentropy', metrics=['accuracy'])
+    return model
+
+# Convolutional Neural Network (CNN)
+def build_cnn():
+    model = Sequential([
+        Conv1D(64, 2, activation='relu', input_shape=input_shape),
+        Flatten(),
+        Dense(32, activation='relu'),
+        Dense(1, activation='sigmoid')
+    ])
+    model.compile(optimizer='adam', loss='binary_crossentropy', metrics=['accuracy'])
+    return model
+
+# Recurrent Neural Network (RNN)
+def build_rnn():
+    model = Sequential([
+        tf.keras.layers.SimpleRNN(64, activation='relu', input_shape=input_shape),
+        Dense(1, activation='sigmoid')
+    ])
+    model.compile(optimizer='adam', loss='binary_crossentropy', metrics=['accuracy'])
+    return model
+
+# Long Short-Term Memory (LSTM)
+def build_lstm():
+    model = Sequential([
+        LSTM(64, activation='relu', input_shape=input_shape),
+        Dense(1, activation='sigmoid')
+    ])
+    model.compile(optimizer='adam', loss='binary_crossentropy', metrics=['accuracy'])
+    return model
+
+# Bidirectional LSTM (BiLSTM)
+def build_bilstm():
+    model = Sequential([
+        Bidirectional(LSTM(64, activation='relu'), input_shape=input_shape),
+        Dense(1, activation='sigmoid')
+    ])
+    model.compile(optimizer='adam', loss='binary_crossentropy', metrics=['accuracy'])
+    return model
+
+models_dl = {
+    'Simple Neural Network': build_mlp(),
+    'Convolutional Neural Network': build_cnn(),
+    'Recurrent Neural Network': build_rnn(),
+    'LSTM': build_lstm(),
+    'Bidirectional LSTM': build_bilstm()
+}
+
+results_dl = {}
+
+for name, model in models_dl.items():
+    model.fit(X_train_dl, y_train, epochs=10, batch_size=32, verbose=0)
+    y_pred = (model.predict(X_test_dl) > 0.5).astype(int)
+    accuracy = accuracy_score(y_test, y_pred)
+    print(classification_report(y_test, y_pred))
+    results_dl[name] = accuracy
+
+results_dl
